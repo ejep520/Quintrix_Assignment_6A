@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
@@ -16,14 +17,18 @@ import io.netty.handler.timeout.WriteTimeoutHandler;
 import reactor.netty.http.client.HttpClient;
 
 public class RestClient {
+  @Value("${sixthA.baseUri}")
+  private String baseUri;
+  @Value("${sixthA.timeoutMax}")
+  private int timeoutMax;
   private HttpClient httpClient =
-      HttpClient.create().option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
-          .responseTimeout(Duration.ofMillis(5000)).doOnConnected(
-              conn -> conn.addHandlerLast(new ReadTimeoutHandler(5000, TimeUnit.MILLISECONDS))
-                  .addHandlerLast(new WriteTimeoutHandler(5000, TimeUnit.MILLISECONDS)));
-  private WebClient webClient = WebClient.builder().baseUrl("http://localhost:8080")
+      HttpClient.create().option(ChannelOption.CONNECT_TIMEOUT_MILLIS, timeoutMax)
+          .responseTimeout(Duration.ofMillis(timeoutMax)).doOnConnected(
+              conn -> conn.addHandlerLast(new ReadTimeoutHandler(timeoutMax, TimeUnit.MILLISECONDS))
+                  .addHandlerLast(new WriteTimeoutHandler(timeoutMax, TimeUnit.MILLISECONDS)));
+  private WebClient webClient = WebClient.builder().baseUrl(baseUri)
       .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED.toString())
-      .defaultUriVariables(Collections.singletonMap("url", "http://localhost:8080"))
+      .defaultUriVariables(Collections.singletonMap("url", baseUri))
       .clientConnector(new ReactorClientHttpConnector(httpClient)).build();
 
   public Person getReply(String uri, Object id) {
