@@ -1,6 +1,3 @@
-server:
-   port: 8889
-
-sixth:
-   baseUri: http://localhost:8080
-   timeoutMax: 5000
+spring:
+  profiles:
+    active: dev
